@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitter Filter</title>
+  <style>
+    :root {
+      --primary: #1da1f2;
+      --bg-body: #0d1117;
+      --bg-card: #161b22;
+      --bg-input: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --success: #3fb950;
+    }
+
+    [data-theme="light"] {
+      --bg-body: #f6f8fa;
+      --bg-card: #ffffff;
+      --bg-input: #f0f3f6;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --text-dim: #656d76;
+      --accent: #0969da;
+      --success: #1a7f37;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 360px;
+      max-height: 580px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-body);
+      color: var(--text);
+      transition: all 0.3s ease;
+      overflow-y: auto;
+      border-radius: 16px;
+    }
+
+    /* 美化滚动条 */
+    body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    body::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+
+    /* Firefox滚动条 */
+    body {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #1da1f2 0%, #0d8ecf 50%, #00b4d8 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .theme-switch {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-switch:hover {
+      border-color: var(--accent);
+      transform: scale(1.05);
+    }
+
+    .theme-icon {
+      font-size: 18px;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .filter-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .filter-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(88, 166, 255, 0.1);
+    }
+
+    .filter-item label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .filter-item input {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .filter-item input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+
+    .toggle-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .toggle-icon.enable { background: rgba(63, 185, 80, 0.15); }
+    .toggle-icon.highlight { background: rgba(29, 161, 242, 0.15); }
+    .toggle-icon.hide { background: rgba(248, 81, 73, 0.15); }
+    .toggle-icon.breathe { background: rgba(188, 140, 255, 0.15); }
+
+    [data-theme="light"] .toggle-icon.enable { background: rgba(26, 127, 55, 0.1); }
+    [data-theme="light"] .toggle-icon.highlight { background: rgba(9, 105, 218, 0.1); }
+    [data-theme="light"] .toggle-icon.hide { background: rgba(218, 76, 72, 0.1); }
+    [data-theme="light"] .toggle-icon.breathe { background: rgba(130, 80, 225, 0.1); }
+
+    .toggle-label { font-size: 13px; font-weight: 500; }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle.active::after {
+      transform: translateX(20px);
+    }
+
+    .slider-group {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .slider-row:last-child { margin-bottom: 0; }
+
+    .slider-row label {
+      width: 40px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: var(--bg-input);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(88, 166, 255, 0.4);
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 10px rgba(88, 166, 255, 0.6);
+    }
+
+    .slider-value {
+      width: 40px;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-align: right;
+      font-family: monospace;
+    }
+
+    .color-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .color-row:last-child { margin-bottom: 0; }
+
+    .color-label {
+      flex: 1;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .color-input {
+      width: 80px;
+      padding: 6px 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    .color-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .color-preview {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .color-preview input[type="color"] {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      width: 38px;
+      height: 38px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1da1f2, #0d8ecf);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(29, 161, 242, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .status-bar {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status-bar.active {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .preview-box {
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .preview-title {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preview-tweet {
+      background: var(--bg-input);
+      border-radius: 8px;
+      padding: 12px;
+      border-left: 3px solid var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-tweet::before {
+      content: '✓ 匹配';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .preview-text {
+      font-size: 12px;
+      color: var(--text-dim);
+      padding-right: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">X</div>
+    <div class="header-text">
+      <h1>Twitter Filter</h1>
+      <p>智能筛选优质推文</p>
+    </div>
+    <div class="theme-switch" id="themeSwitch">
+      <span class="theme-icon" id="themeIcon">☀️</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">筛选条件</div>
+    <div class="filter-grid">
+      <div class="filter-item">
+        <label>💬 回复</label>
+        <input type="number" id="repliesThreshold" value="0" min="0" placeholder="不限">
+      </div>
+      <div class="filter-item">
+        <label>🔁 转发</label>
+        <input type="number" id="retweetsThreshold" value="0" min="0" placeholder="不限">
+      </div>
+      <div class="filter-item">
+        <label>❤️ 点赞</label>
+        <input type="number" id="likesThreshold" value="0" min="0" placeholder="不限">
+      </div>
+      <div class="filter-item">
+        <label>👁️ 浏览</label>
+        <input type="number" id="viewsThreshold" value="10000" min="0" placeholder="不限">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">显示设置</div>
+    
+    <div class="toggle-card">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-icon enable">⚡</div>
+          <span class="toggle-label">启用筛选</span>
+        </div>
+        <div class="toggle active" id="enableToggle"></div>
+      </div>
+    </div>
+
+    <div class="toggle-card">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-icon highlight">✨</div>
+          <span class="toggle-label">高亮匹配推文</span>
+        </div>
+        <div class="toggle active" id="highlightToggle"></div>
+      </div>
+    </div>
+
+    <div class="toggle-card">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-icon hide">🙈</div>
+          <span class="toggle-label">隐藏不匹配推文</span>
+        </div>
+        <div class="toggle" id="hideToggle"></div>
+      </div>
+    </div>
+
+    <div class="toggle-card">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-icon enable">👤</div>
+          <span class="toggle-label">用户主页也筛选</span>
+        </div>
+        <div class="toggle" id="profileToggle"></div>
+      </div>
+    </div>
+
+    <div class="toggle-card">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-icon breathe">💫</div>
+          <span class="toggle-label">呼吸灯动效</span>
+        </div>
+        <div class="toggle active" id="breatheToggle"></div>
+      </div>
+      <div class="slider-group" id="breatheSliders" style="display: none;">
+        <div class="slider-row">
+          <label>亮度</label>
+          <input type="range" id="breatheIntensity" min="10" max="100" value="50" class="slider">
+          <span class="slider-value" id="breatheIntensityValue">50%</span>
+        </div>
+        <div class="slider-row">
+          <label>速度</label>
+          <input type="range" id="breatheSpeed" min="5" max="40" value="20" class="slider">
+          <span class="slider-value" id="breatheSpeedValue">2.0s</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">主题颜色</div>
+    <div class="color-section">
+      <div class="color-row">
+        <span class="color-label">
+          <span>🎨</span> 高亮颜色
+        </span>
+        <input type="text" id="highlightColorText" class="color-input" value="#00ba7c" maxlength="7" spellcheck="false">
+        <div class="color-preview" id="highlightColorPreview">
+          <input type="color" id="highlightColor" value="#00ba7c">
+        </div>
+      </div>
+      <div class="color-row">
+        <span class="color-label">
+          <span>✨</span> 呼吸灯光
+        </span>
+        <input type="text" id="glowColorText" class="color-input" value="#1da1f2" maxlength="7" spellcheck="false">
+        <div class="color-preview" id="glowColorPreview">
+          <input type="color" id="glowColor" value="#1da1f2">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">预览效果</div>
+    <div class="preview-box">
+      <div class="preview-title">匹配推文样式</div>
+      <div class="preview-tweet" id="previewTweet">
+        <div class="preview-text">这是一条示例推文内容，展示了筛选后的高亮效果...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" id="saveBtn">
+      <span>💾</span> 保存
+    </button>
+    <button class="btn btn-secondary" id="applyBtn">
+      <span>▶️</span> 应用
+    </button>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <span class="status-dot"></span>
+    <span id="statusText">就绪</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
