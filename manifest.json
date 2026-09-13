@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Twitter Filter - Views & Replies",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "筛选推特上浏览量或留言量大于指定阈值的推文",
   "permissions": [
     "storage",
