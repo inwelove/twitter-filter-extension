@@ -170,10 +170,6 @@
     const hasMatch = tweet.classList.contains(MATCH_CLASS);
     const hasNoMatch = tweet.classList.contains(NO_MATCH_CLASS);
 
-    // 状态没变就跳过
-    if (shouldMatch === hasMatch && !settings.hide) return;
-    if (!shouldMatch && !settings.hide && !hasNoMatch) return;
-
     // 清除并重新应用
     tweet.classList.remove(MATCH_CLASS, NO_MATCH_CLASS, BREATHE_CLASS);
     tweet.setAttribute('data-filter-stats', JSON.stringify(stats));
@@ -181,12 +177,17 @@
     if (shouldMatch) {
       tweet.classList.add(MATCH_CLASS);
       if (settings.breathe) tweet.classList.add(BREATHE_CLASS);
-      // 检查是否超过上限（只计数匹配的）
+      tweet.style.display = '';
+      tweet.style.visibility = '';
       if (settings.maxFilterCount > 0) {
         filteredCount++;
       }
     } else if (settings.hide) {
       tweet.classList.add(NO_MATCH_CLASS);
+      tweet.style.display = 'none';
+    } else {
+      tweet.style.display = '';
+      tweet.style.visibility = '';
     }
   }
 
