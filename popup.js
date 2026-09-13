@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     retweetsThreshold: $('retweetsThreshold'),
     likesThreshold: $('likesThreshold'),
     viewsThreshold: $('viewsThreshold'),
+    maxFilterCount: $('maxFilterCount'),
     highlightColor: $('highlightColor'),
     glowColor: $('glowColor'),
     highlightColorText: $('highlightColorText'),
@@ -18,7 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     highlight: $('highlightToggle'),
     hide: $('hideToggle'),
     breathe: $('breatheToggle'),
-    profile: $('profileToggle')
+    profile: $('profileToggle'),
+    autoLoad: $('autoLoadToggle')
   };
 
   const sliders = {
@@ -143,10 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
       hide: toggles.hide.classList.contains('active'),
       breathe: toggles.breathe.classList.contains('active'),
       profileEnabled: toggles.profile.classList.contains('active'),
+      autoLoad: toggles.autoLoad.classList.contains('active'),
       repliesThreshold: parseInt(fields.repliesThreshold.value) || 0,
       retweetsThreshold: parseInt(fields.retweetsThreshold.value) || 0,
       likesThreshold: parseInt(fields.likesThreshold.value) || 0,
       viewsThreshold: parseInt(fields.viewsThreshold.value) || 0,
+      maxFilterCount: parseInt(fields.maxFilterCount.value) || 0,
       highlightColor: fields.highlightColor.value,
       glowColor: fields.glowColor.value,
       breatheIntensity: parseInt(sliders.breatheIntensity.value) || 50,
@@ -189,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fields.retweetsThreshold.value = s.retweetsThreshold || 0;
         fields.likesThreshold.value = s.likesThreshold || 0;
         fields.viewsThreshold.value = s.viewsThreshold || 10000;
+        fields.maxFilterCount.value = s.maxFilterCount || 100;
         fields.highlightColor.value = s.highlightColor || '#00ba7c';
         fields.glowColor.value = s.glowColor || '#1da1f2';
         fields.highlightColorText.value = s.highlightColor || '#00ba7c';
@@ -203,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setToggle(toggles.hide, s.hide);
         setToggle(toggles.breathe, s.breathe);
         setToggle(toggles.profile, s.profileEnabled);
+        setToggle(toggles.autoLoad, s.autoLoad);
 
         breatheSliders.style.display = toggles.breathe.classList.contains('active') ? 'block' : 'none';
         updatePreview();

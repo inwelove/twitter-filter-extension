@@ -6,15 +6,20 @@
     highlight: true,
     hide: false,
     breathe: true,
+    profileEnabled: false,
+    autoLoad: false,
     repliesThreshold: 0,
     retweetsThreshold: 0,
     likesThreshold: 0,
     viewsThreshold: 10000,
+    maxFilterCount: 100,
     highlightColor: '#00ba7c',
     glowColor: '#1da1f2',
     breatheIntensity: 50,
     breatheSpeed: 20
   };
+
+  let filteredCount = 0;
 
   const MATCH_CLASS = 'twitter-filter-match';
   const NO_MATCH_CLASS = 'twitter-filter-no-match';
@@ -61,6 +66,13 @@
     root.style.setProperty('--glow-color-rgb', `rgba(${hexToRgb(settings.glowColor)}, `);
     root.style.setProperty('--breathe-intensity', (settings.breatheIntensity / 100).toString());
     root.style.setProperty('--breathe-speed', (settings.breatheSpeed / 10) + 's');
+
+    // 处理后台自动加载
+    if (settings.autoLoad) {
+      startAutoLoad();
+    } else {
+      stopAutoLoad();
+    }
   }
 
   function hexToRgb(hex) {
@@ -73,28 +85,45 @@
   function startObserver() {
     if (observer) observer.disconnect();
 
-    let isProcessing = false;
-
     observer = new MutationObserver((mutations) => {
-      if (!settings.enabled || isProcessing) return;
+      if (!settings.enabled) return;
 
-      // 只在有新节点添加时处理
       const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
-      if (!hasNewNodes) return;
+      if (!hasNewNodes && location.href === lastUrl) return;
 
-      // URL变化或有新推文
       if (location.href !== lastUrl) {
         lastUrl = location.href;
+        filteredCount = 0; // 页面切换时重置计数
       }
 
-      isProcessing = true;
-      requestAnimationFrame(() => {
-        processAllTweets();
-        isProcessing = false;
-      });
+      requestAnimationFrame(() => processAllTweets());
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // 后台自动加载：模拟滚动触发加载
+    if (settings.autoLoad) {
+      startAutoLoad();
+    }
+  }
+
+  let autoLoadTimer = null;
+
+  function startAutoLoad() {
+    stopAutoLoad();
+    autoLoadTimer = setInterval(() => {
+      if (!settings.enabled) return;
+      // 触发滚动事件让Twitter加载更多内容
+      window.scrollBy(0, 100);
+      setTimeout(() => window.scrollBy(0, -100), 100);
+    }, 10000); // 每10秒触发一次
+  }
+
+  function stopAutoLoad() {
+    if (autoLoadTimer) {
+      clearInterval(autoLoadTimer);
+      autoLoadTimer = null;
+    }
   }
 
   function debouncedProcess() {
@@ -120,7 +149,14 @@
       clearAllFilters();
       return;
     }
-    document.querySelectorAll('article[data-testid="tweet"]').forEach(processTweet);
+
+    // 检查筛选上限
+    if (settings.maxFilterCount > 0 && filteredCount >= settings.maxFilterCount) {
+      return; // 达到上限，停止筛选
+    }
+
+    const tweets = document.querySelectorAll('article[data-testid="tweet"]');
+    tweets.forEach(processTweet);
   }
 
   function clearAllFilters() {
@@ -133,10 +169,8 @@
     const shouldMatch = checkMatch(stats);
     const hasMatch = tweet.classList.contains(MATCH_CLASS);
     const hasNoMatch = tweet.classList.contains(NO_MATCH_CLASS);
-    const hasBreathe = tweet.classList.contains(BREATHE_CLASS);
 
-    // 状态没变就跳过，避免闪烁
-    const currentlyMatches = hasMatch || (hasNoMatch === false && shouldMatch === false);
+    // 状态没变就跳过
     if (shouldMatch === hasMatch && !settings.hide) return;
     if (!shouldMatch && !settings.hide && !hasNoMatch) return;
 
@@ -147,6 +181,10 @@
     if (shouldMatch) {
       tweet.classList.add(MATCH_CLASS);
       if (settings.breathe) tweet.classList.add(BREATHE_CLASS);
+      // 检查是否超过上限（只计数匹配的）
+      if (settings.maxFilterCount > 0) {
+        filteredCount++;
+      }
     } else if (settings.hide) {
       tweet.classList.add(NO_MATCH_CLASS);
     }

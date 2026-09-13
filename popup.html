@@ -538,6 +538,11 @@
         <input type="number" id="viewsThreshold" value="10000" min="0" placeholder="不限">
       </div>
     </div>
+    <div class="filter-item" style="margin-top: 10px;">
+      <label>🛡️ 筛选上限（防止风控）</label>
+      <input type="number" id="maxFilterCount" value="100" min="0" placeholder="0为不限制">
+      <div class="help">达到上限后停止筛选，设为0不限制</div>
+    </div>
   </div>
 
   <div class="section">
@@ -546,10 +551,20 @@
     <div class="toggle-card">
       <div class="toggle-row">
         <div class="toggle-info">
-          <div class="toggle-icon enable">⚡</div>
-          <span class="toggle-label">启用筛选</span>
+          <div class="toggle-icon enable">👤</div>
+          <span class="toggle-label">用户主页也筛选</span>
         </div>
-        <div class="toggle active" id="enableToggle"></div>
+        <div class="toggle" id="profileToggle"></div>
+      </div>
+    </div>
+
+    <div class="toggle-card">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-icon enable">🔄</div>
+          <span class="toggle-label">后台自动加载</span>
+        </div>
+        <div class="toggle" id="autoLoadToggle"></div>
       </div>
     </div>
 
