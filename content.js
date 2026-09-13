@@ -73,15 +73,25 @@
   function startObserver() {
     if (observer) observer.disconnect();
 
-    observer = new MutationObserver(() => {
-      if (!settings.enabled) return;
-      // URL变化检测
+    let isProcessing = false;
+
+    observer = new MutationObserver((mutations) => {
+      if (!settings.enabled || isProcessing) return;
+
+      // 只在有新节点添加时处理
+      const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
+      if (!hasNewNodes) return;
+
+      // URL变化或有新推文
       if (location.href !== lastUrl) {
         lastUrl = location.href;
-        debouncedProcess();
-      } else {
-        debouncedProcess();
       }
+
+      isProcessing = true;
+      requestAnimationFrame(() => {
+        processAllTweets();
+        isProcessing = false;
+      });
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
@@ -119,11 +129,22 @@
   }
 
   function processTweet(tweet) {
-    tweet.classList.remove(MATCH_CLASS, NO_MATCH_CLASS, BREATHE_CLASS);
     const stats = extractStats(tweet);
+    const shouldMatch = checkMatch(stats);
+    const hasMatch = tweet.classList.contains(MATCH_CLASS);
+    const hasNoMatch = tweet.classList.contains(NO_MATCH_CLASS);
+    const hasBreathe = tweet.classList.contains(BREATHE_CLASS);
+
+    // 状态没变就跳过，避免闪烁
+    const currentlyMatches = hasMatch || (hasNoMatch === false && shouldMatch === false);
+    if (shouldMatch === hasMatch && !settings.hide) return;
+    if (!shouldMatch && !settings.hide && !hasNoMatch) return;
+
+    // 清除并重新应用
+    tweet.classList.remove(MATCH_CLASS, NO_MATCH_CLASS, BREATHE_CLASS);
     tweet.setAttribute('data-filter-stats', JSON.stringify(stats));
 
-    if (checkMatch(stats)) {
+    if (shouldMatch) {
       tweet.classList.add(MATCH_CLASS);
       if (settings.breathe) tweet.classList.add(BREATHE_CLASS);
     } else if (settings.hide) {
