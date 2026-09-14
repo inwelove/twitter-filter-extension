@@ -29,7 +29,7 @@
 }
 
 .twitter-filter-match::after {
-  content: '✓ 匹配';
+  content: '优质';
   position: absolute;
   top: 10px;
   right: 10px;
