@@ -34,8 +34,7 @@
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'applyFilter') {
       settings = msg.settings;
-      applyStyles();
-      processAllTweets();
+      resetAndProcess();
       sendResponse({ success: true });
     }
   });
@@ -54,10 +53,18 @@
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.twitterFilterSettings) {
       settings = { ...settings, ...changes.twitterFilterSettings.newValue };
-      applyStyles();
-      processAllTweets();
+      resetAndProcess();
     }
   });
+
+  function resetAndProcess() {
+    filteredCount = 0;
+    document.querySelectorAll('article[data-filtered]').forEach(el => {
+      el.removeAttribute('data-filtered');
+    });
+    applyStyles();
+    processAllTweets();
+  }
 
   function applyStyles() {
     const root = document.documentElement;
@@ -93,7 +100,10 @@
 
       if (location.href !== lastUrl) {
         lastUrl = location.href;
-        filteredCount = 0; // 页面切换时重置计数
+        filteredCount = 0;
+        document.querySelectorAll('article[data-filtered]').forEach(el => {
+          el.removeAttribute('data-filtered');
+        });
       }
 
       requestAnimationFrame(() => processAllTweets());
@@ -150,28 +160,24 @@
       return;
     }
 
-    // 检查筛选上限
-    if (settings.maxFilterCount > 0 && filteredCount >= settings.maxFilterCount) {
-      return; // 达到上限，停止筛选
-    }
-
     const tweets = document.querySelectorAll('article[data-testid="tweet"]');
     tweets.forEach(processTweet);
   }
 
   function clearAllFilters() {
-    document.querySelectorAll(`article.${MATCH_CLASS}, article.${NO_MATCH_CLASS}, article.${BREATHE_CLASS}`)
-      .forEach(el => el.classList.remove(MATCH_CLASS, NO_MATCH_CLASS, BREATHE_CLASS));
+    document.querySelectorAll(`article[data-filtered]`).forEach(el => {
+      el.classList.remove(MATCH_CLASS, NO_MATCH_CLASS, BREATHE_CLASS);
+      el.removeAttribute('data-filtered');
+    });
   }
 
   function processTweet(tweet) {
+    if (tweet.hasAttribute('data-filtered')) return;
+
     const stats = extractStats(tweet);
     const shouldMatch = checkMatch(stats);
-    const hasMatch = tweet.classList.contains(MATCH_CLASS);
-    const hasNoMatch = tweet.classList.contains(NO_MATCH_CLASS);
 
-    // 清除并重新应用
-    tweet.classList.remove(MATCH_CLASS, NO_MATCH_CLASS, BREATHE_CLASS);
+    tweet.setAttribute('data-filtered', '1');
     tweet.setAttribute('data-filter-stats', JSON.stringify(stats));
 
     if (shouldMatch) {
@@ -179,15 +185,10 @@
       if (settings.breathe) tweet.classList.add(BREATHE_CLASS);
       tweet.style.display = '';
       tweet.style.visibility = '';
-      if (settings.maxFilterCount > 0) {
-        filteredCount++;
-      }
+      filteredCount++;
     } else if (settings.hide) {
       tweet.classList.add(NO_MATCH_CLASS);
       tweet.style.display = 'none';
-    } else {
-      tweet.style.display = '';
-      tweet.style.visibility = '';
     }
   }
 
