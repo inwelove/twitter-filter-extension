@@ -468,6 +468,34 @@
       50% { opacity: 0.4; }
     }
 
+    .footer {
+      margin-top: 14px;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .footer-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--primary);
+      background: var(--bg-card);
+    }
+
+    .footer-divider {
+      color: var(--border);
+      margin: 0 4px;
+    }
+
     .preview-box {
       margin-top: 16px;
       padding: 14px;
@@ -674,6 +702,16 @@
   <div class="status-bar" id="statusBar">
     <span class="status-dot"></span>
     <span id="statusText">就绪</span>
+  </div>
+
+  <div class="footer">
+    <a href="https://x.com/inwelove" target="_blank" class="footer-link">
+      <span>🐦</span> 关于作者
+    </a>
+    <span class="footer-divider">|</span>
+    <a href="https://github.com/inwelove/twitter-filter-extension" target="_blank" class="footer-link">
+      <span>📦</span> GitHub
+    </a>
   </div>
 
   <script src="popup.js"></script>
