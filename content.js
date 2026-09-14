@@ -174,6 +174,11 @@
   function processTweet(tweet) {
     if (tweet.hasAttribute('data-filtered')) return;
 
+    // 自动加载时才检查上限，手动滚动不限制
+    if (settings.autoLoad && settings.maxFilterCount > 0 && filteredCount >= settings.maxFilterCount) {
+      return;
+    }
+
     const stats = extractStats(tweet);
     const shouldMatch = checkMatch(stats);
 
