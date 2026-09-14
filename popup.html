@@ -468,32 +468,62 @@
       50% { opacity: 0.4; }
     }
 
-    .footer {
-      margin-top: 14px;
-      padding: 12px;
+    .author-links {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .author-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+
+    .author-link:hover {
+      background: var(--bg-input);
+    }
+
+    .author-icon {
+      font-size: 18px;
+      font-weight: bold;
+      margin-right: 12px;
+      color: var(--text);
+    }
+
+    .author-text {
+      flex: 1;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .author-arrow {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .footer-links {
       text-align: center;
+      padding: 12px 0 4px;
       font-size: 12px;
     }
 
-    .footer-link {
-      color: var(--text-dim);
+    .footer-links a {
+      color: var(--accent);
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
     }
 
-    .footer-link:hover {
-      color: var(--primary);
-      background: var(--bg-card);
+    .footer-links a:hover {
+      text-decoration: underline;
     }
 
-    .footer-divider {
-      color: var(--border);
-      margin: 0 4px;
+    .footer-sep {
+      margin: 0 8px;
+      color: var(--text-dim);
     }
 
     .preview-box {
@@ -699,19 +729,35 @@
     </button>
   </div>
 
+  <div class="section">
+    <div class="section-header">关注作者</div>
+    <div class="author-links">
+      <a href="https://x.com/inwelove" target="_blank" class="author-link">
+        <span class="author-icon">𝕏</span>
+        <span class="author-text">@inwelove · 在 X 上关注</span>
+        <span class="author-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" id="saveBtn">
+      <span>💾</span> 保存
+    </button>
+    <button class="btn btn-secondary" id="applyBtn">
+      <span>▶️</span> 应用
+    </button>
+  </div>
+
   <div class="status-bar" id="statusBar">
     <span class="status-dot"></span>
     <span id="statusText">就绪</span>
   </div>
 
-  <div class="footer">
-    <a href="https://x.com/inwelove" target="_blank" class="footer-link">
-      <span>🐦</span> 关于作者
-    </a>
-    <span class="footer-divider">|</span>
-    <a href="https://github.com/inwelove/twitter-filter-extension" target="_blank" class="footer-link">
-      <span>📦</span> GitHub
-    </a>
+  <div class="footer-links">
+    <a href="https://github.com/inwelove/twitter-filter-extension" target="_blank">了解更多</a>
+    <span class="footer-sep">·</span>
+    <a href="https://github.com/inwelove/twitter-filter-extension" target="_blank">GitHub</a>
   </div>
 
   <script src="popup.js"></script>
